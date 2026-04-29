@@ -1,0 +1,192 @@
+version: '3.8'
+
+services:
+  # Frontend - Next.js
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3050:3050"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - PORT=3050
+      - NEXT_PUBLIC_API_URL=http://localhost:8090
+      - NEXT_PUBLIC_CRAWLING_SERVICE_URL=http://localhost:3001
+    depends_on:
+      - backend
+    networks:
+      - datamining-network
+
+  # Backend - FastAPI
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./backend:/app
+      - ./storage:/app/storage
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://datamining_user:datamining_pass@postgres:5432/datamining
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=dev-secret-key-change-me-please-1234567890abcd
+  - CRAWLING_SERVICE_URL=http://crawling-service:3001
+  - ML_ENGINE_URL=http://ml-engine:8001
+      - STORAGE_PATH=/app/storage
+      - MAX_FILE_SIZE=1073741824
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - datamining-network
+
+  # Crawling Service - Node.js
+  crawling-service:
+    build:
+      context: ./services/crawling
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./services/crawling:/app
+      - /app/node_modules
+      - ./logs:/app/logs
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - REDIS_URL=redis://redis:6379
+      - BACKEND_URL=http://backend:8000
+      - CRAWLER_USER_AGENT=DataMiningBot/1.0 (+https://datamining-platform.com/bot)
+      - CRAWLER_DEFAULT_DELAY=1000
+      - CRAWLER_MAX_RETRIES=3
+      - CRAWLER_TIMEOUT=30000
+      - LOG_LEVEL=info
+  - ALLOWED_ORIGINS=http://localhost:3050,http://localhost:8090
+    depends_on:
+      - redis
+    networks:
+      - datamining-network
+
+  # ML Engine Service - Python
+  ml-engine:
+    build:
+      context: ./services/ml-engine
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./services/ml-engine:/app
+      - ./storage:/app/storage
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://datamining_user:datamining_pass@postgres:5432/datamining
+      - REDIS_URL=redis://redis:6379
+      - BACKEND_URL=http://backend:8000
+      - ML_ENGINE_URL=http://ml-engine:8001
+      - STORAGE_PATH=/app/storage
+      - TEMP_PATH=/app/storage/temp
+      - MODEL_PATH=/app/storage/models
+      - CACHE_PATH=/app/storage/cache
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - datamining-network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:13-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=datamining
+      - POSTGRES_USER=datamining_user
+      - POSTGRES_PASSWORD=datamining_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./config/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - datamining-network
+
+  # Redis Cache
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - datamining-network
+
+  # Nginx Reverse Proxy (Production-like)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./config/nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+      - crawling-service
+      - ml-engine
+    networks:
+      - datamining-network
+
+  # Monitoring - Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - datamining-network
+
+  # Monitoring - Grafana
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3002:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./config/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+    networks:
+      - datamining-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  datamining-network:
+    driver: bridge

@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global resets / tweaks */
+html, body { height: 100%; }
+body { @apply bg-gray-50 text-gray-900 antialiased; font-feature-settings: 'kern'; }
+
+/* Dark mode */
+.dark body { @apply bg-slate-900 text-gray-100; }
+
+/* CSS variables (design tokens) */
+:root {
+	--radius-sm: 2px;
+	--radius-md: 6px;
+	--radius-lg: 10px;
+	--transition-fast: 120ms;
+	--transition-base: 200ms;
+}
+
+/* Typography tuning */
+body, button, input, textarea { font-family: 'Inter', system-ui, sans-serif; }
+h1,h2,h3,h4 { @apply font-semibold text-gray-800 dark:text-gray-100; }
+p { @apply leading-relaxed; }
+
+/* Scrollbar styling (webkit) */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #c4c4c4; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+/* Utility helpers */
+.fade-in { animation: fade-in .25s ease-in; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* Focus outlines for accessibility */
+:focus-visible { outline: 2px solid theme('colors.primary.500'); outline-offset: 2px; }
+
+/* Utility classes */
+.card { @apply bg-white dark:bg-slate-800 rounded-lg shadow-md p-4 border border-gray-100 dark:border-slate-700; }
+.card-hover { @apply transition-shadow duration-200 hover:shadow-lg; }
+.btn { @apply inline-flex items-center justify-center font-medium rounded-md px-4 py-2 gap-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed; }
+.btn-primary { @apply bg-primary-600 text-white hover:bg-primary-500 focus-visible:ring-2 focus-visible:ring-primary-400; }
+.btn-outline { @apply border border-primary-600 text-primary-600 hover:bg-primary-50 dark:hover:bg-slate-700; }
+.badge { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-100; }

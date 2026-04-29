@@ -1,0 +1,86 @@
+---
+description:Development rules
+globs:
+alwaysApply: true
+---
+1. General Principles
+
+Always follow the SDLC phases (requirements → design → implementation → testing → deployment → maintenance).
+
+Prioritize security, scalability, and maintainability in every decision.
+
+Use modular, clean, and documented code with strict version control (Git + branching strategy).
+
+Ensure human-readable logs and error handling across frontend and backend.
+
+Follow 12-factor app methodology for cloud-native design.
+
+2. Backend Engineering Rules
+
+Use Node.js (Express/Prisma) or Python (FastAPI/Django) depending on module needs.
+
+Design APIs as REST + GraphQL hybrid with OpenAPI/Swagger docs auto-generated.
+
+Database: PostgreSQL as primary, with option for MongoDB (unstructured data).
+
+Always normalize DB schemas; migrations managed with Prisma/Migrate or Alembic.
+
+Enforce input validation & sanitization with JSON schema or Pydantic.
+
+Integrate AI/ML services (e.g., data cleaning, mining) as separate microservices.
+
+3. Frontend Engineering Rules
+
+Use Next.js + React + Tailwind for the UI layer.
+
+Maintain design system with reusable components (shadcn/ui, Storybook).
+
+Follow responsive-first, accessibility-first design.
+
+Implement state management with Redux Toolkit or Zustand.
+
+Include real-time feedback (progress bars, loaders, AI suggestions).
+
+4. AI/ML Engineering Rules
+
+Data preprocessing, cleaning, and mining are separate AI pipelines.
+
+Use Scikit-learn, TensorFlow, or PyTorch for model training & inference.
+
+Apply explainable AI (XAI) (e.g., SHAP, LIME) for ML-based suggestions.
+
+Ensure pipeline modularity: ingestion → cleaning → feature engineering → mining → output.
+
+Every AI feature must have a fallback rule-based system if model confidence < threshold.
+
+5. DevOps Rules
+
+Use Docker + Kubernetes for containerization & orchestration.
+
+Maintain CI/CD pipelines (GitHub Actions or GitLab CI).
+
+Testing stages: unit → integration → end-to-end → load → security.
+
+Monitor with Prometheus + Grafana, log with ELK stack.
+
+Secrets management with Vault or environment variables (no hardcoding).
+
+6. Collaboration & Versioning
+
+Follow Git branching model: main (stable), dev (integration), feature/*, hotfix/*.
+
+Every commit must be atomic, descriptive, and reviewed.
+
+Use issues + pull requests + code reviews for collaboration.
+
+Maintain technical documentation in Markdown + API auto-docs.
+
+7. Ethical & Compliance Rules
+
+Ensure data privacy & GDPR compliance at all stages.
+
+No scraping of restricted or illegal data sources.
+
+Provide user consent + audit trails for every AI decision.
+
+Regularly run bias, fairness, and robustness checks on ML models.

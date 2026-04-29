@@ -1,0 +1,22 @@
+# Minimal dependencies to run the FastAPI server for auth/datasets endpoints
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+sqlalchemy==2.0.36
+alembic==1.13.2
+
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+httpx==0.25.2
+requests==2.31.0
+
+pydantic[email]==2.9.2
+pydantic-settings==2.3.4
+python-dotenv==1.0.0
+
+structlog==23.2.0
+prometheus-client==0.19.0
+aiofiles==23.2.1
+redis==5.0.1
